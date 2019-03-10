@@ -21,7 +21,8 @@ class ProductsController < ApplicationController
       @account.update(
         seller_id: seller_id
       )
-      AmazonProduct.search(user, seller_id)
+      #AmazonProduct.search(user, seller_id)
+      SearchAmazonJob.perform_later(user, seller_id)
       redirect_back(fallback_location: root_path)
     end
   end
