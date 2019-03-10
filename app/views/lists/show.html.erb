@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="page-header" id="banner">
+    <div class="row my-4">
+      <div class="col-lg-10 col-md-10">
+        <h2>出品商品の確認</h2>
+        <%= link_to "出品ファイル出力", lists_show_path(format: :csv), class: "btn btn-primary" %>
+        <br><br>
+        <table class="table table-striped table-hover table-bordered" style='width:1200px; table-layout:fixed;'>
+          <thead class="thead-light">
+            <% @headers.each do |row| %>
+            <tr>
+              <% row.each do |col| %>
+              <th><%= col %></th>
+              <% end %>
+            </tr>
+            <% end %>
+          </thead>
+          <tbody>
+            <% @body.each do |row| %>
+            <tr>
+              <% @headers[2].each do |col| %>
+              <% if col == 'price' then %>
+              <td><%= text_field_tag 'price[' + row['sku'] + ']', row[col], class: 'form-control', style: 'text-align:center;' %></td>
+              <% else %>
+              <td><%= row[col] %></td>
+              <% end %>
+              <% end %>
+            </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

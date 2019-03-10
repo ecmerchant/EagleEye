@@ -1,0 +1,40 @@
+<div class="container">
+  <div class="page-header" id="banner">
+    <div class="row my-4">
+      <div class="col-12">
+        <h3>販売価格テーブルの設定</h3>
+        <div class="form-inline">
+          <%= form_tag('/prices/edit', method:'post', multipart: true, id:"price_edit") do %>
+            <label style="vertical-align:middle;">
+              <span class="btn btn-primary" style="width:220px;">
+                価格テーブルのインポート
+                <input type="file" name="price_edit" onChange="$('#price_edit').submit();" style="display:none">
+              </span>
+            </label>
+          <% end %>
+        </div>
+        <br>
+
+        <table class="table table-striped table-hover table-bordered ellipsis" style="width:45%;">
+          <thead class="thead-light">
+            <tr>
+              <th style="width:5%;">No.</th>
+              <th style="width:20%;">仕入価格</th>
+              <th style="width:20%;">販売価格</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @prices.each_with_index do |temp, index| %>
+            <tr>
+              <td class="td_vertical_align_middle"><%= index + 1 %></td>
+              <td class="td_vertical_align_middle"><%= temp.original_price %></td>
+              <td class="td_vertical_align_middle"><%= temp.convert_price %></td>
+            </tr>
+            <% end %>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+</div>

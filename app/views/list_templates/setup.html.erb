@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="page-header" id="banner">
+    <div class="row my-4">
+      <div class="col-lg-10 col-md-10">
+        <h2>出品ファイルの設定</h2>
+        <%= form_tag('/list_templates/setup', method:'post') do %>
+          <p class="lead" style="display:inline;margin-right:20px;">相乗り出品の設定</p>
+          <%= link_to '各項目の詳細について', 'https://docs.google.com/spreadsheets/d/19wm9__Z6ORCUepbvobbN04jfmcHZHizAac4ubbqrdBE/edit?usp=sharing', target: '_blank' %>
+          <div class="actions">
+            <%= submit_tag 'テンプレート設定', class: 'btn btn-info', style: 'margin-right:20px;' %>
+          </div><br>
+          <table class="table table-striped table-hover table-bordered" style='width:1200px; table-layout:fixed;'>
+            <thead class="thead-light">
+              <tr>
+                <th style='width:25%;'>項目名</th>
+                <th style='width:25%;'>項目コード</th>
+                <th style='width:50%;'>設定値</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @headers.transpose.each do |row| %>
+              <tr>
+                <td class="td_vertical_align_middle" style='width:25%;'><%= truncate(row[1]) %></td>
+                <td class="td_vertical_align_middle" style='width:25%;'><%= row[2] %></td>
+                <% if @template.find_by(header: row[2]) != nil then init = @template.find_by(header: row[2]).value else init = nil end %>
+                <td class="td_vertical_align_middle" style='width:50%;'><%= text_field_tag 'text[' + row[2] + ']', init, class: 'form-control' %></td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

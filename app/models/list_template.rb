@@ -1,0 +1,2 @@
+class ListTemplate < ApplicationRecord
+end
