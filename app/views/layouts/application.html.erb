@@ -48,7 +48,6 @@
       table {
         font-size: 11pt;
         width: 100%;
-        height: 350px;
         display: block;
         overflow-x: scroll;
         white-space: nowrap;
@@ -64,6 +63,59 @@
 
       .td_vertical_align_middle.td_vertical_align_middle {
         vertical-align: middle;
+      }
+
+      table.table-headerfixed {
+      /*    width: 100%;*/
+        table-layout: fixed;
+      }
+
+      table.table-headerfixed thead,
+      table.table-headerfixed tbody,
+      table.table-headerfixed tr,
+      table.table-headerfixed td,
+      table.table-headerfixed th {
+          display: block;
+      }
+
+      table.table-headerfixed tr:after {
+          content: ' ';
+          display: block;
+          visibility: hidden;
+          clear: both;
+      }
+
+      table.table-headerfixed tbody {
+          height: 400px;
+          overflow-y: scroll;
+      }
+
+      table.table-headerfixed thead {
+          /* fallback */
+          width: 97%;
+          /* minus scroll bar width */
+          width: calc(100% - 18px);
+      }
+
+      table.table-headerfixed tbody td,
+      table.table-headerfixed thead th {
+          float: left;
+          height: 3em;
+          display: table-cell;
+          text-align: center;
+          padding: 10px;
+          font-size: 14px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+      }
+
+      table.table-headerfixed tbody td {
+          height: 3em;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 14px;
       }
 
     }

@@ -6,6 +6,8 @@ class ProductsController < ApplicationController
     @account = Account.find_or_create_by(user: user)
     @headers = {
       asin: "ASIN",
+      title: "商品名",
+      brand: "ブランド名",
       seller_id: "セラーID",
       seller_price: "セラー価格",
       list_price: "出品価格"

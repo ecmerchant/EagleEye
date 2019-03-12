@@ -17,11 +17,15 @@
         </div>
         <br>
         <h5 style="display:inline;">取得済み件数　全<%= @total.to_i %>件</h5>
-        <table class="table table-striped table-hover table-bordered ellipsis" id="list_table" style="width:600px;">
+        <table class="table table-striped table-hover table-bordered table-headerfixed ellipsis" id="list_table" style="width:100%;">
           <thead class="thead-light">
             <tr>
               <% @headers.each do |key, value| %>
-              <th style="width:150px;"><%= value %></th>
+              <% if key == :title then %>
+              <th style="width:25%;"><%= value %></th>
+              <% else %>
+              <th style="width:15%;"><%= value %></th>
+              <% end %>
               <% end %>
             </tr>
           </thead>
@@ -30,7 +34,13 @@
             <% @lists.each_with_index do |temp, index| %>
             <tr>
               <% @headers.each do |key, value| %>
-              <td><%= temp[key] %></td>
+              <% if key == :title then %>
+              <td style="text-align:left;width:25%;"><%= temp.amazon_product[key] %></td>
+              <% elsif key == :brand then %>
+              <td style="width:15%;"><%= temp.amazon_product[key] %></td>
+              <% else %>
+              <td style="width:15%;"><%= temp[key] %></td>
+              <% end %>
               <% end %>
             </tr>
             <% end %>
