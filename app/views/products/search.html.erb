@@ -16,9 +16,7 @@
           <%= link_to '出品ファイルの確認', lists_show_path, class: 'btn btn-success' %>
         </div>
         <br>
-        <h5 style="display:inline;">取得済み件数　全<%= @total.to_i %>件</h5>
-        <br>
-        <p>取得状況： <%= @account.process %></p>
+        <h5 style="display:inline;">取得状況： <%= @account.process %></h5><br><br>
         <%= paginate @lists %>
         <table class="table table-striped table-hover table-bordered table-headerfixed ellipsis" id="list_table" style="width:100%;">
           <thead class="thead-light">

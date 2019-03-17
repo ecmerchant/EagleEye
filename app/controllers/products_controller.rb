@@ -13,7 +13,7 @@ class ProductsController < ApplicationController
       list_price: "出品価格"
     }
     current_seller_id = @account.seller_id
-    @lists = List.where(user: user, seller_id: current_seller_id).page(params[:page]).per(100)
+    @lists = List.where(user: user, seller_id: current_seller_id).page(params[:page]).per(500)
     @total = List.where(user: user, seller_id: current_seller_id).count
     if request.post? then
       seller_id = params[:seller_id]
