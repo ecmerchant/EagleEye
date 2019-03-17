@@ -5,9 +5,13 @@ class AmazonProduct < ApplicationRecord
 
   def self.search(user, seller_id)
     logger.debug("======== Search Start ========")
+
+    option = {
+      'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
+    }
     url = "https://www.amazon.co.jp/s?merchant=" + seller_id.to_s + "&page=1"
     charset = nil
-    html = open(url) do |f|
+    html = open(url, option) do |f|
       charset = f.charset
       f.read
     end
@@ -38,7 +42,7 @@ class AmazonProduct < ApplicationRecord
           page = "https://www.amazon.co.jp/dp/" + asin.to_s + "/?m=" + seller_id.to_s
           logger.debug(page)
           charset = nil
-          html = open(page) do |f|
+          html = open(page, option) do |f|
             charset = f.charset
             f.read
           end
