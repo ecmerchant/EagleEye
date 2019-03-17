@@ -7,7 +7,7 @@ class AmazonProduct < ApplicationRecord
     logger.debug("======== Search Start ========")
 
     option = {
-      'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
+      "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
     }
     url = "https://www.amazon.co.jp/s?merchant=" + seller_id.to_s + "&page=1"
     charset = nil
