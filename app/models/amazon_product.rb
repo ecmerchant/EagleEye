@@ -6,15 +6,23 @@ class AmazonProduct < ApplicationRecord
   def self.search(user, seller_id)
     logger.debug("======== Search Start ========")
     ua = CSV.read('app/others/User-Agent.csv', headers: false, col_sep: "\t")
+    account = Account.find_by(user: user)
+    counter = 0
+    account.update(
+      process: counter.to_s + "件取得済み"
+    )
 
-    for page in 1..400 do
+    (1..400).each do |page|
       logger.debug(ua.sample[0])
       option = {
         "User-Agent" => ua.sample[0]
       }
 
+      ahash = Hash.new
+
       url = "https://www.amazon.co.jp/s?merchant=" + seller_id.to_s + "&page=" + page.to_s
       charset = nil
+
       html = open(url, option) do |f|
         charset = f.charset
         f.read
@@ -27,10 +35,25 @@ class AmazonProduct < ApplicationRecord
       logger.debug(url)
       if doc.xpath('//li[@class="s-result-item s-result-card-for-container-noborder s-carded-grid celwidget  "]')[0] == nil then
         logger.debug("NO ITEM")
-        logger.debug(html)
-        logger.debug("=============== NO ITEM ====================")
-
-        break
+        if html.include?('action="/errors/validateCaptcha"') then
+          html = open(url, option) do |f|
+            charset = "shift-JIS"
+            f.read
+          end
+          logger.debug(html)
+          logger.debug("=============== ACCESS DINIED ====================")
+          account.update(
+            process: "取得中断 全" + counter.to_s + "件"
+          )
+          break
+        else
+          logger.debug(html)
+          logger.debug("=============== NO ITEM ====================")
+          account.update(
+            process: "取得完了 全" + counter.to_s + "件"
+          )
+          break
+        end
       end
 
       doc.xpath('//li[@class="s-result-item s-result-card-for-container-noborder s-carded-grid celwidget  "]').each do |node|
@@ -53,10 +76,11 @@ class AmazonProduct < ApplicationRecord
 
           if price.include?("-") then
             logger.debug("============= Variation ================")
-            sleep(rand(1..3))
             cp = "https://www.amazon.co.jp/dp/" + asin.to_s + "/?m=" + seller_id.to_s
             logger.debug(cp)
             charset = nil
+
+            sleep(Random.rand*2.0)
             html2 = open(cp, option) do |f|
               charset = f.charset
               f.read
@@ -72,15 +96,19 @@ class AmazonProduct < ApplicationRecord
                   var_price = var_price.inner_text
                   var_price = var_price.gsub("￥", "").gsub(",", "")
                   var_price = var_price.strip
-
-                  buf1 << AmazonProduct.new(asin: var_asin, title: title, brand: brand)
-                  buf2 << List.new(user: user, asin: var_asin, seller_id: seller_id, seller_price: var_price.to_i, list_price: Price.calc(user, var_price.to_i))
-
+                  if ahash.has_key?(var_asin) == false then
+                    counter += 1
+                    buf1 << AmazonProduct.new(asin: var_asin, title: title, brand: brand)
+                    buf2 << List.new(user: user, asin: var_asin, seller_id: seller_id, seller_price: var_price.to_i, list_price: Price.calc(user, var_price.to_i))
+                    account.update(
+                      process: counter.to_s + "件取得済み"
+                    )
+                    ahash[var_asin] = var_price
+                  end
                 else
                   logger.debug("----------------------------------------")
                   bufq = doc2.xpath('.//div[@id="bottomRow"]')[0].inner_html
                   bufk = /"asinVariationValues"([\s\S]*?)\}\}/.match(bufq)[0]
-                  logger.debug(bufk)
                   jbuf = JSON.parse("{" + bufk + "}")
 
                   option = {
@@ -88,9 +116,10 @@ class AmazonProduct < ApplicationRecord
                   }
                   logger.debug("----=====-----")
                   jbuf["asinVariationValues"].each do |key, value|
-
                     jvasin = key.to_s
                     url2 = "https://www.amazon.co.jp/dp/" + jvasin.to_s + "/?m=" + seller_id.to_s + "&th=1&psc=1"
+
+                    sleep(Random.rand*2.0)
                     html3 = open(url2, option) do |f|
                       charset = f.charset
                       f.read
@@ -98,7 +127,6 @@ class AmazonProduct < ApplicationRecord
                     doc3 = Nokogiri::HTML.parse(html3, nil, charset)
                     logger.debug(url2)
                     nprice = doc3.xpath('.//span[@id="priceblock_ourprice"]')[0]
-
                     if nprice != nil then
                       nprice = nprice.inner_text
                       nprice = nprice.gsub("￥", "").gsub(",", "")
@@ -106,13 +134,18 @@ class AmazonProduct < ApplicationRecord
                     else
                       nprice = 0
                     end
-
                     if price != 0 then
-                      buf1 << AmazonProduct.new(asin: jvasin, title: title, brand: brand)
                       new_p =  Price.calc(user, nprice.to_i).to_i
-                      buf2 << List.new(user: user, asin: jvasin, seller_id: seller_id, seller_price: nprice.to_i, list_price: new_p)
+                      if ahash.has_key?(jvasin) == false then
+                        counter += 1
+                        buf1 << AmazonProduct.new(asin: jvasin, title: title, brand: brand)
+                        buf2 << List.new(user: user, asin: jvasin, seller_id: seller_id, seller_price: nprice.to_i, list_price: new_p)
+                        account.update(
+                          process: counter.to_s + "件取得済み"
+                        )
+                        ahash[jvasin] = nprice
+                      end
                     end
-                    sleep(rand(1..2))
                   end
                 end
 
@@ -122,13 +155,24 @@ class AmazonProduct < ApplicationRecord
             price = price.gsub("￥", "").gsub(",", "")
             price = price.strip
             logger.debug(price)
-            buf1 << AmazonProduct.new(asin: asin, title: title, brand: brand)
-            buf2 << List.new(user: user, asin: asin, seller_id: seller_id, seller_price: price.to_i, list_price: Price.calc(user, price.to_i))
+            if ahash.has_key?(asin) == false then
+              counter += 1
+              buf1 << AmazonProduct.new(asin: asin, title: title, brand: brand)
+              buf2 << List.new(user: user, asin: asin, seller_id: seller_id, seller_price: price.to_i, list_price: Price.calc(user, price.to_i))
+              account.update(
+                process: counter.to_s + "件取得済み"
+              )
+              ahash[asin] = price.to_i
+            end
           end
         end
       end
       AmazonProduct.import buf1, on_duplicate_key_update: {constraint_name: :for_upsert_amazon_products, columns: [:title, :brand, :updated_at]}
       List.import buf2, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:seller_id, :seller_price, :list_price]}
+      account.update(
+        process: counter.to_s + "件取得済み"
+      )
+      logger.debug(url)
     end
   end
 
