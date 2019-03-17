@@ -23,9 +23,17 @@ class AmazonProduct < ApplicationRecord
       url = "https://www.amazon.co.jp/s?merchant=" + seller_id.to_s + "&page=" + page.to_s
       charset = nil
 
-      html = open(url, option) do |f|
-        charset = f.charset
-        f.read
+      begin
+        html = open(url, option) do |f|
+          charset = f.charset
+          f.read
+        end
+      rescue => e
+        puts e
+        account.update(
+          process: "取得中断" + counter.to_s + "件取得済み"
+        )
+        return
       end
 
       doc = Nokogiri::HTML.parse(html, nil, charset)
@@ -36,11 +44,6 @@ class AmazonProduct < ApplicationRecord
       if doc.xpath('//li[@class="s-result-item s-result-card-for-container-noborder s-carded-grid celwidget  "]')[0] == nil then
         logger.debug("NO ITEM")
         if html.include?('action="/errors/validateCaptcha"') then
-          html = open(url, option) do |f|
-            charset = "shift-JIS"
-            f.read
-          end
-          logger.debug(html)
           logger.debug("=============== ACCESS DINIED ====================")
           account.update(
             process: "取得中断 全" + counter.to_s + "件"
@@ -81,10 +84,19 @@ class AmazonProduct < ApplicationRecord
             charset = nil
 
             sleep(Random.rand*2.0)
-            html2 = open(cp, option) do |f|
-              charset = f.charset
-              f.read
+            begin
+              html2 = open(cp, option) do |f|
+                charset = f.charset
+                f.read
+              end
+            rescue => e
+              puts e
+              account.update(
+                process: "取得中断" + counter.to_s + "件取得済み"
+              )
+              return
             end
+
             doc2 = Nokogiri::HTML.parse(html2, nil, charset)
             buf = doc2.xpath('.//div[@id="variation_color_name"]')[0]
             if buf != nil then
@@ -120,9 +132,17 @@ class AmazonProduct < ApplicationRecord
                     url2 = "https://www.amazon.co.jp/dp/" + jvasin.to_s + "/?m=" + seller_id.to_s + "&th=1&psc=1"
 
                     sleep(Random.rand*2.0)
-                    html3 = open(url2, option) do |f|
-                      charset = f.charset
-                      f.read
+                    begin
+                      html3 = open(url2, option) do |f|
+                        charset = f.charset
+                        f.read
+                      end
+                    rescue => e
+                      puts e
+                      account.update(
+                        process: "取得中断" + counter.to_s + "件取得済み"
+                      )
+                      return
                     end
                     doc3 = Nokogiri::HTML.parse(html3, nil, charset)
                     logger.debug(url2)
@@ -159,9 +179,6 @@ class AmazonProduct < ApplicationRecord
               counter += 1
               buf1 << AmazonProduct.new(asin: asin, title: title, brand: brand)
               buf2 << List.new(user: user, asin: asin, seller_id: seller_id, seller_price: price.to_i, list_price: Price.calc(user, price.to_i))
-              account.update(
-                process: counter.to_s + "件取得済み"
-              )
               ahash[asin] = price.to_i
             end
           end
