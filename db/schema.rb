@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_10_142547) do
+ActiveRecord::Schema.define(version: 2019_03_15_225443) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -71,6 +71,14 @@ ActiveRecord::Schema.define(version: 2019_03_10_142547) do
     t.string "user"
     t.integer "original_price"
     t.integer "convert_price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.string "user"
+    t.string "ng_type"
+    t.text "keyword"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

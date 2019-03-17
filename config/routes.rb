@@ -12,6 +12,8 @@ Rails.application.routes.draw do
 
   get 'products/search'
   post 'products/search'
+  get 'products/setup'
+  post 'products/setup'
 
   root to: 'products#search'
 

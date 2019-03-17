@@ -21,26 +21,63 @@ class AmazonProduct < ApplicationRecord
       logger.debug(asin)
       price = node.xpath('.//span[@class="a-size-base a-color-price s-price a-text-bold"]')[0]
       body = node.inner_html
+      title = node.xpath('.//h2')[0].inner_text
+      brand = /<span class="a-size-small a-color-secondary"><\/span><span class="a-size-small a-color-secondary">([\s\S]*?)<\/span>/.match(body)
+      if brand != nil then
+        brand = brand[1]
+      else
+        brand = nil
+      end
+      logger.debug(title)
+      logger.debug(brand)
 
       if price != nil then
         price = price.inner_text
         if price.include?("-") then
-          price = /-([\s\S]*?)$/.match(price)[1]
-          price = price.gsub("￥", "").gsub(",", "")
-          price = price.strip
+          logger.debug("============= Variation ================")
+          page = "https://www.amazon.co.jp/dp/" + asin.to_s + "/?m=" + seller_id.to_s
+          logger.debug(page)
+          charset = nil
+          html = open(page) do |f|
+            charset = f.charset
+            f.read
+          end
+          doc = Nokogiri::HTML.parse(html, nil, charset)
+
+          price = doc.xpath('.//span[@id="price_inside_buybox"]')[0]
+          if price != nil then
+            price = price.inner_text
+            price = price.gsub("￥", "").gsub(",", "")
+            price = price.strip
+          else
+            price = 0
+          end
           logger.debug(price)
+
+          buf = doc.xpath('.//div[@id="variation_color_name"]')[0]
+          if buf != nil then
+            variation = buf.xpath('.//li')
+            variation.each do |temp|
+              var_asin = temp.attribute("data-defaultasin").value
+              var_price = temp.xpath('.//span[@class="a-size-mini twisterSwatchPrice"]')[0]
+              if var_price != nil then
+                var_price = var_price.inner_text
+                var_price = var_price.gsub("￥", "").gsub(",", "")
+                var_price = var_price.strip
+              else
+                var_price = 0
+              end
+              buf1 << AmazonProduct.new(asin: var_asin, title: title, brand: brand)
+              buf2 << List.new(user: user, asin: var_asin, seller_id: seller_id, seller_price: var_price, list_price: Price.calc(user, var_price))
+            end
+          end
         else
           price = price.gsub("￥", "").gsub(",", "")
           price = price.strip
           logger.debug(price)
+          buf1 << AmazonProduct.new(asin: asin, title: title, brand: brand)
+          buf2 << List.new(user: user, asin: asin, seller_id: seller_id, seller_price: price, list_price: Price.calc(user, price))
         end
-
-        title = node.xpath('.//h2')[0].inner_text
-        brand = /<span class="a-size-small a-color-secondary"><\/span><span class="a-size-small a-color-secondary">([\s\S]*?)<\/span>/.match(body)[1]
-        logger.debug(title)
-        logger.debug(brand)
-        buf1 << AmazonProduct.new(asin: asin, title: title, brand: brand)
-        buf2 << List.new(user: user, asin: asin, seller_id: seller_id, seller_price: price, list_price: Price.calc(user, price))
       end
     end
     AmazonProduct.import buf1, on_duplicate_key_update: {constraint_name: :for_upsert_amazon_products, columns: [:title, :brand, :updated_at]}

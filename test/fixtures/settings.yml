@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: MyString
+  ng_type: MyString
+  keyword: MyText
+
+two:
+  user: MyString
+  ng_type: MyString
+  keyword: MyText

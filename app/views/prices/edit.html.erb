@@ -4,6 +4,7 @@
       <div class="col-12">
         <h3>販売価格テーブルの設定</h3>
         <div class="form-inline">
+          <%= link_to 'テンプレート取得', {:controller => 'prices', :action => 'edit', :format => 'xlsx'}, {class: 'btn btn-success', id: 'download_template', style: 'margin-right: 20px;'} %>
           <%= form_tag('/prices/edit', method:'post', multipart: true, id:"price_edit") do %>
             <label style="vertical-align:middle;">
               <span class="btn btn-primary" style="width:220px;">
