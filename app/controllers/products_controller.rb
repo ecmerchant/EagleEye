@@ -88,4 +88,20 @@ class ProductsController < ApplicationController
 
   end
 
+  def delete
+    @login_user = current_user
+    user = current_user.email
+    if request.post? then
+      data = params[:chk]
+      temp = List.where(user: user)
+      data.each do |key, value|
+        tg = temp.find(key)
+        if tg != nil then
+          tg.delete
+        end
+      end
+      redirect_back(fallback_location: root_path)
+    end
+  end
+
 end

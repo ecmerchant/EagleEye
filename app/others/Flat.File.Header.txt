@@ -1,0 +1,3 @@
+TemplateType=Offer			
+在庫数	商品のコンディション	商品のコンディション説明	リードタイム(出荷までにかかる作業日数)
+quantity	condition-type	condition-note	leadtime-to-ship

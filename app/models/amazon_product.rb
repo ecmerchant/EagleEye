@@ -7,6 +7,11 @@ class AmazonProduct < ApplicationRecord
     logger.debug("======== Search Start ========")
     ua = CSV.read('app/others/User-Agent.csv', headers: false, col_sep: "\t")
     account = Account.find_by(user: user)
+    sets = Setting.where(user: user)
+
+    ng_keywords = sets.where(ng_type: "キーワード").group(:keyword).pluck(:keyword)
+    ng_brands = sets.where(ng_type: "ブランド名").group(:keyword).pluck(:keyword)
+
     counter = 0
     account.update(
       process: counter.to_s + "件取得済み"
@@ -110,8 +115,27 @@ class AmazonProduct < ApplicationRecord
                   var_price = var_price.strip
                   if ahash.has_key?(var_asin) == false then
                     counter += 1
+                    nl = ng_keywords.select do |t|
+                      title.include?(t)
+                    end
+
+                    ng_flg = false
+
+                    if nl[0] != nil then
+                      ng_flg = true
+                    else
+                      nl = ng_brands.select do |t|
+                        brand.include?(t)
+                      end
+                      if nl[0] != nil then
+                        ng_flg = true
+                      else
+                        ng_flg = false
+                      end
+                    end
+
                     buf1 << AmazonProduct.new(asin: var_asin, title: title, brand: brand)
-                    buf2 << List.new(user: user, asin: var_asin, seller_id: seller_id, seller_price: var_price.to_i, list_price: Price.calc(user, var_price.to_i))
+                    buf2 << List.new(user: user, asin: var_asin, seller_id: seller_id, seller_price: var_price.to_i, list_price: Price.calc(user, var_price.to_i), ng_flg: ng_flg)
                     account.update(
                       process: counter.to_s + "件取得済み"
                     )
@@ -158,8 +182,28 @@ class AmazonProduct < ApplicationRecord
                       new_p =  Price.calc(user, nprice.to_i).to_i
                       if ahash.has_key?(jvasin) == false then
                         counter += 1
+
+                        nl = ng_keywords.select do |t|
+                          title.include?(t)
+                        end
+
+                        ng_flg = false
+
+                        if nl[0] != nil then
+                          ng_flg = true
+                        else
+                          nl = ng_brands.select do |t|
+                            brand.include?(t)
+                          end
+                          if nl[0] != nil then
+                            ng_flg = true
+                          else
+                            ng_flg = false
+                          end
+                        end
+
                         buf1 << AmazonProduct.new(asin: jvasin, title: title, brand: brand)
-                        buf2 << List.new(user: user, asin: jvasin, seller_id: seller_id, seller_price: nprice.to_i, list_price: new_p)
+                        buf2 << List.new(user: user, asin: jvasin, seller_id: seller_id, seller_price: nprice.to_i, list_price: new_p, ng_flg: ng_flg)
                         account.update(
                           process: counter.to_s + "件取得済み"
                         )
@@ -177,15 +221,41 @@ class AmazonProduct < ApplicationRecord
             logger.debug(price)
             if ahash.has_key?(asin) == false then
               counter += 1
+              nl = ng_keywords.select do |t|
+                title.include?(t)
+              end
+
+              ng_flg = false
+
+              if nl[0] != nil then
+                ng_flg = true
+              else
+                if brand != nil then
+                  nl = ng_brands.select do |t|
+                    brand.include?(t)
+                  end
+                  if nl[0] != nil then
+                    ng_flg = true
+                  else
+                    ng_flg = false
+                  end
+                else
+                  ng_flg = false
+                end
+              end
+
               buf1 << AmazonProduct.new(asin: asin, title: title, brand: brand)
-              buf2 << List.new(user: user, asin: asin, seller_id: seller_id, seller_price: price.to_i, list_price: Price.calc(user, price.to_i))
+              buf2 << List.new(user: user, asin: asin, seller_id: seller_id, seller_price: price.to_i, list_price: Price.calc(user, price.to_i), ng_flg: ng_flg)
               ahash[asin] = price.to_i
+              account.update(
+                process: counter.to_s + "件取得済み"
+              )
             end
           end
         end
       end
       AmazonProduct.import buf1, on_duplicate_key_update: {constraint_name: :for_upsert_amazon_products, columns: [:title, :brand, :updated_at]}
-      List.import buf2, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:seller_id, :seller_price, :list_price]}
+      List.import buf2, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:seller_id, :seller_price, :list_price, :ng_flg]}
       account.update(
         process: counter.to_s + "件取得済み"
       )

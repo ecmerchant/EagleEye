@@ -14,16 +14,20 @@
             </div>
           <% end %>
           <%= link_to '出品ファイルの確認', lists_show_path, class: 'btn btn-success' %>
+
+          <%= form_tag('/products/delete', method:'post', id:'products_delete') do %>
+          <%= submit_tag '選択データ削除', class: 'btn btn-warning', style: 'margin-left:30px; margin-right:20px;' %>
         </div>
         <br>
-        <h5 style="display:inline;">取得状況： <%= @account.process %></h5><br><br>
+        <h5 style="display:inline;">取得状況： <%= @account.process %> &nbsp;(対象セラーID： <%= @account.seller_id %>)</h5><br><br>
         <%= paginate @lists %>
         <table class="table table-striped table-hover table-bordered table-headerfixed ellipsis" id="list_table" style="width:100%;">
           <thead class="thead-light">
             <tr>
+              <th style="width:5%;">削除</th>
               <% @headers.each do |key, value| %>
               <% if key == :title then %>
-              <th style="width:25%;"><%= value %></th>
+              <th style="width:20%;"><%= value %></th>
               <% else %>
               <th style="width:15%;"><%= value %></th>
               <% end %>
@@ -34,9 +38,11 @@
             <% if @lists != nil then %>
             <% @lists.each_with_index do |temp, index| %>
             <tr>
+              <% checked = temp.ng_flg  %>
+              <td style="text-align:center;width:5%;"><%= check_box_tag 'chk[' + temp.id.to_s + ']', true, checked, id: "chk_" + temp.id.to_s %></td>
               <% @headers.each do |key, value| %>
               <% if key == :title then %>
-              <td style="text-align:left;width:25%;"><%= temp.amazon_product[key] %></td>
+              <td style="text-align:left;width:20%;"><%= link_to temp.amazon_product[key], 'https://www.amazon.co.jp/dp/' + temp.asin + "/?m=" + temp.seller_id.to_s + "&th=1&psc=1", target: '_blank'  %></td>
               <% elsif key == :brand then %>
               <td style="width:15%;"><%= temp.amazon_product[key] %></td>
               <% else %>
@@ -48,8 +54,22 @@
             <% end %>
           </tbody>
         </table>
-
+        <% end %>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+$(function() {
+  $('[id^="chk_"]').click(function(event){
+    event.stopPropagation();
+  });
+  $('[id^="chk_"]').parent('td').click(function(event){
+    $(this).children('[id^="chk_"]').trigger('click');
+  });
+  $('label[for^="chk_"]').click(function(event) {
+    event.preventDefault();
+  });
+});
+</script>
