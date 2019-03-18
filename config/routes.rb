@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   post 'prices/edit'
 
   get 'lists/show'
+  get 'lists/check'
+  post 'lists/check'
+  get 'lists/regist'
 
   get 'list_templates/setup'
   post 'list_templates/setup'
@@ -15,6 +18,9 @@ Rails.application.routes.draw do
   get 'products/setup'
   post 'products/setup'
   post 'products/delete'
+  get 'products/check'
+  get 'products/clear'
+  post 'products/regist'
 
   root to: 'products#search'
 

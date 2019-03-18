@@ -16,7 +16,7 @@ class ListsController < ApplicationController
         @headers.push(row)
       end
     end
-    @lists = List.where(user: user, seller_id: current_seller_id)
+    @lists = List.where(user: user, seller_id: current_seller_id, ng_flg: false)
 
     @body = Array.new
     @template = ListTemplate.where(user: user, list_type: '相乗り')
@@ -56,4 +56,72 @@ class ListsController < ApplicationController
       end
     end
   end
+
+  def regist
+    @login_user = current_user
+    user = current_user.email
+    @account = Account.find_or_create_by(user: user)
+    current_seller_id = @account.seller_id
+    @lists = List.where(user: user, seller_id: current_seller_id, ng_flg: false)
+
+    flg_list = Array.new
+
+    @lists.each do |list|
+      flg_list << List.new(user: user, asin: list.asin, list_flg: true)
+    end
+    List.import flg_list, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:list_flg]}
+    redirect_to lists_check_path
+  end
+
+  def check
+    @login_user = current_user
+    user = current_user.email
+    @account = Account.find_or_create_by(user: user)
+    current_seller_id = @account.seller_id
+    temp = List.where(user: user, list_flg: true)
+    @asins = temp.group(:asin).pluck(:asin)
+    @sellers = temp.group(:seller_id).pluck(:seller_id)
+
+    respond_to do |format|
+      format.html
+        if request.post? then
+          data = params[:asin_del]
+          logger.debug("======== DEL ===========")
+          if data != nil then
+            ext = File.extname(data.path)
+            if ext == ".xls" || ext == ".xlsx" then
+              logger.debug("=== delete ===")
+              workbook = RubyXL::Parser.parse(data.path)
+              worksheet = workbook[0]
+
+              worksheet.each_with_index do |row, i|
+                if i > 0 then
+                  if row[0] == nil then break end
+                  if row[0].value == nil then break end
+                  ng = row[0].value.to_s
+
+                  temp.where(asin: ng).update(
+                    list_flg: false
+                  )
+
+                end
+              end
+            end
+          end
+          redirect_to lists_check_path
+        end
+      format.xlsx do
+        @workbook = RubyXL::Workbook.new
+        @sheet = @workbook[0]
+
+        user = current_user.email
+        @sheet.add_cell(0, 0, "削除ASIN")
+        data = @workbook.stream.read
+        timestamp = Time.new.strftime("%Y%m%d%H%M%S")
+        send_data data, filename: "削除ASINテンプレート.xlsx", type: "application/xlsx", disposition: "attachment"
+      end
+    end
+
+  end
+
 end

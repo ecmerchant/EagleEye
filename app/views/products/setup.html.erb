@@ -2,22 +2,36 @@
   <div class="page-header" id="banner">
     <div class="row my-4">
       <div class="col-lg-12">
-        <h2>NG条件の設定</h2>
+        <h2>出品除外条件の設定</h2>
         <div class="form-inline">
           <%= link_to 'テンプレート取得', {:controller => 'products', :action => 'setup', :format => 'xlsx'}, {class: 'btn btn-success', id: 'download_template', style: 'margin-right: 20px;'} %>
           <%= form_tag('/products/setup', method:'post', multipart: true, id:"ng_setup") do %>
             <div class="form-inline">
             <label style="vertical-align:middle;">
-              <span class="btn btn-primary" style="width:220px;">
-                除外キーワードの登録
+              <span class="btn btn-primary" style="width:180px;">
+                キーワードの登録
                 <input type="file" name="ng_key" onChange="$('#ng_setup').submit();" style="display:none">
               </span>
             </label>
 
             <label style="vertical-align:middle; margin-left:30px;">
-              <span class="btn btn-info" style="width:220px;">
-                除外ブランド名の登録
+              <span class="btn btn-info" style="width:160px;">
+                ブランド名の登録
                 <input type="file" name="ng_brand" onChange="$('#ng_setup').submit();" style="display:none">
+              </span>
+            </label>
+
+            <label style="vertical-align:middle;">
+              <span class="btn btn-warning" style="width:180px; margin-left:30px;">
+                キーワードの削除
+                <input type="file" name="ng_key_del" onChange="$('#ng_setup').submit();" style="display:none">
+              </span>
+            </label>
+
+            <label style="vertical-align:middle; margin-left:30px;">
+              <span class="btn btn-warning" style="width:160px;">
+                ブランド名の削除
+                <input type="file" name="ng_brand_del" onChange="$('#ng_setup').submit();" style="display:none">
               </span>
             </label>
             </div>

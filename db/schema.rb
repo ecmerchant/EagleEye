@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_17_150458) do
+ActiveRecord::Schema.define(version: 2019_03_18_142105) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -65,6 +65,7 @@ ActiveRecord::Schema.define(version: 2019_03_17_150458) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "ng_flg", default: false
+    t.boolean "list_flg", default: false
     t.index ["user", "asin"], name: "for_upsert_lists", unique: true
   end
 
