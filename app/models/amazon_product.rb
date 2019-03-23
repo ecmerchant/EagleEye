@@ -71,7 +71,7 @@ class AmazonProduct < ApplicationRecord
         logger.debug(url)
 
         p1 = doc.xpath('//div[@class="sg-col-20-of-24 s-result-item sg-col-0-of-12 sg-col-28-of-32 sg-col-16-of-20 sg-col sg-col-32-of-36 sg-col-12-of-16 sg-col-24-of-28"]')
-        p2 = doc.xpath('//li[@class="s-result-item celwidget  "]')
+        p2 = doc.xpath('//li[@class="s-result-item s-result-card-for-container-noborder s-carded-grid celwidget  "]')
 
 
         if p1[0] == nil && p2[0] == nil then
