@@ -34,13 +34,14 @@ class AmazonProduct < ApplicationRecord
     price_box.push(1000000)
 
     #price_box.each_cons(2) do |tprice|
-      #org_url = "https://www.amazon.co.jp/s?merchant=" + seller_id.to_s + "&low-price=" + tprice[0].to_s + "&high-price=" + tprice[1].to_s
-      org_url = "https://www.amazon.co.jp/s?i=merchant-items&me=" + seller_id.to_s
+      #org_url = "https://www.amazon.co.jp/s?me=" + seller_id.to_s
+      org_url = "https://www.amazon.co.jp/s?i=merchant-items&me=" + seller_id.to_s + "&lo=list&marketplaceID=A1VC38T7YXB528"
+
       logger.debug(org_url)
       (1..400).each do |page|
         logger.debug(ua.sample[0])
         option = {
-          "User-Agent" => ua.sample[0]
+          "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100"
         }
 
         ahash = Hash.new
@@ -61,12 +62,19 @@ class AmazonProduct < ApplicationRecord
           return
         end
 
+        #logger.debug(html[120000..199999])
+
         doc = Nokogiri::HTML.parse(html, nil, charset)
         buf1 = Array.new
         buf2 = Array.new
         logger.debug("========== page access ===========")
         logger.debug(url)
-        if doc.xpath('//li[@class="s-result-item s-result-card-for-container-noborder s-carded-grid celwidget  "]')[0] == nil then
+
+        p1 = doc.xpath('//div[@class="sg-col-20-of-24 s-result-item sg-col-0-of-12 sg-col-28-of-32 sg-col-16-of-20 sg-col sg-col-32-of-36 sg-col-12-of-16 sg-col-24-of-28"]')
+        p2 = doc.xpath('//li[@class="s-result-item celwidget  "]')
+
+
+        if p1[0] == nil && p2[0] == nil then
           if html.include?('action="/errors/validateCaptcha"') then
             logger.debug("=============== ACCESS DINIED ====================")
             account.update(
@@ -74,12 +82,19 @@ class AmazonProduct < ApplicationRecord
             )
             return
           else
+            logger.debug(html[120000..199999])
             logger.debug("=============== NO ITEM ====================")
             break
           end
         end
 
-        doc.xpath('//li[@class="s-result-item s-result-card-for-container-noborder s-carded-grid celwidget  "]').each do |node|
+        if p1[0] == nil then
+          pp = p2
+        else
+          pp = p1
+        end
+
+        pp.each do |node|
           asin = node.attribute("data-asin").value
           price = node.xpath('.//span[@class="a-size-base a-color-price s-price a-text-bold"]')[0]
 
