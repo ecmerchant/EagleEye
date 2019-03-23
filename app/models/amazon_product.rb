@@ -34,8 +34,8 @@ class AmazonProduct < ApplicationRecord
     price_box.push(1000000)
 
     #price_box.each_cons(2) do |tprice|
-      #org_url = "https://www.amazon.co.jp/s?me=" + seller_id.to_s
-      org_url = "https://www.amazon.co.jp/s?i=merchant-items&me=" + seller_id.to_s + "&lo=list&marketplaceID=A1VC38T7YXB528"
+      org_url = "https://www.amazon.co.jp/s?me=" + seller_id.to_s
+      #org_url = "https://www.amazon.co.jp/s?i=merchant-items&me=" + seller_id.to_s + "&lo=list&marketplaceID=A1VC38T7YXB528"
 
       logger.debug(org_url)
       (1..400).each do |page|
