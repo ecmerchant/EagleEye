@@ -41,7 +41,7 @@ class AmazonProduct < ApplicationRecord
       (1..400).each do |page|
         logger.debug(ua.sample[0])
         option = {
-          "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100"
+          "User-Agent" => ua.sample[0]
         }
 
         ahash = Hash.new
