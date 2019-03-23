@@ -74,7 +74,6 @@ class AmazonProduct < ApplicationRecord
             )
             return
           else
-            logger.debug(html)
             logger.debug("=============== NO ITEM ====================")
             break
           end
@@ -100,6 +99,7 @@ class AmazonProduct < ApplicationRecord
 
             if price.include?("-") then
               logger.debug("============= Variation ================")
+=begin
               cp = "https://www.amazon.co.jp/dp/" + asin.to_s + "/?m=" + seller_id.to_s
               logger.debug(cp)
               charset = nil
@@ -193,6 +193,7 @@ class AmazonProduct < ApplicationRecord
 
                 end
               end
+=end
             else
               price = price.gsub("￥", "").gsub(",", "")
               price = price.strip

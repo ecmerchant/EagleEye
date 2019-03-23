@@ -27,7 +27,7 @@ class ProductsController < ApplicationController
       @account.update(
         seller_id: seller_id
       )
-      #AmazonProduct.search(user, seller_id)
+
       tlists = List.where(user: user, seller_id: current_seller_id, ng_flg: true)
       flg_list = Array.new
       tlists.each do |list|
@@ -35,6 +35,10 @@ class ProductsController < ApplicationController
       end
       List.import flg_list, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:ng_flg]}
 
+      counter = 0
+      @account.update(
+        process: counter.to_s + "件取得済み"
+      )
       SearchAmazonJob.perform_later(user, seller_id)
       redirect_back(fallback_location: root_path)
     end
