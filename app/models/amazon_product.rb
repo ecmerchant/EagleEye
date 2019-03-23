@@ -33,9 +33,9 @@ class AmazonProduct < ApplicationRecord
 
     price_box.push(1000000)
 
-    price_box.each_cons(2) do |tprice|
-
-      org_url = "https://www.amazon.co.jp/s?merchant=" + seller_id.to_s + "&low-price=" + tprice[0].to_s + "&high-price=" + tprice[1].to_s
+    #price_box.each_cons(2) do |tprice|
+      #org_url = "https://www.amazon.co.jp/s?merchant=" + seller_id.to_s + "&low-price=" + tprice[0].to_s + "&high-price=" + tprice[1].to_s
+      org_url = "https://www.amazon.co.jp/s?i=merchant-items&me=" + seller_id.to_s
       logger.debug(org_url)
       (1..400).each do |page|
         logger.debug(ua.sample[0])
@@ -218,7 +218,7 @@ class AmazonProduct < ApplicationRecord
         )
         logger.debug(url)
       end
-    end
+    #end
     account.update(
       process: "取得完了 全" + counter.to_s + "件"
     )
